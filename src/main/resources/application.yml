@@ -1,0 +1,4 @@
+footballapi:
+  base:
+    url: https://apiv2.apifootball.com/
+

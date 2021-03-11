@@ -25,5 +25,4 @@ public class LeagueController {
         return ResponseEntity.ok()
                 .body(leagueService.getDetailsForLeagueStanding(country, league, team));
     }
-
 }

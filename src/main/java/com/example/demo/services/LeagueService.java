@@ -21,50 +21,13 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Slf4j
 public class LeagueService {
-    private final FootballApiClient footballApiClient;
+    private final LeagueEnricherProvider enricher;
 
     public LeagueDetails getDetailsForLeagueStanding(String country, String league, String team) {
         log.info("Fetching details for country {} league {} team {}", country, league, team);
-        Country selectedCountry = getSelectedCountry(country);
-        League selectedLeague = getLeague(league, selectedCountry);
-
-        Standing standing = filterStandingForGivenTeam(team, selectedLeague);
-        return mapFrom(selectedCountry, standing);
-    }
-
-    private Standing filterStandingForGivenTeam(String team, League selectedLeague) {
-        List<Standing> standings = footballApiClient.fetchStandingForLeague(selectedLeague.getLeagueId());
-
-        return standings
-                .stream()
-                .filter(standing -> standing.getTeamName().equalsIgnoreCase(team))
-                .findFirst().orElseThrow(() -> new NoLeaderBoardException("No information available for given team"));
-    }
-
-    private LeagueDetails mapFrom(Country selectedCountry, Standing standing) {
-        return LeagueDetails.builder()
-                .leagueId(standing.getLeagueId())
-                .leagueName(standing.getLeagueName())
-                .countryId(selectedCountry.getCountryId())
-                .countryName(selectedCountry.getCountryName())
-                .teamId(standing.getTeamId())
-                .teamName(standing.getTeamName())
-                .overallLeaguePosition(standing.getOverallLeaguePosition()).build();
-    }
-
-    private League getLeague(String league, Country selectedCountry) {
-        List<League> leagues = footballApiClient.fetchLeaguesForCountry(selectedCountry.getCountryId());
-        return leagues.stream()
-                .filter(each -> each.getLeagueName().equalsIgnoreCase(league))
-                .findFirst()
-                .orElseThrow(() -> new LeagueNotFoundException("Invalid League"));
-    }
-
-    private Country getSelectedCountry(String country) {
-        List<Country> countries = footballApiClient.fetchCountries();
-        return countries.stream()
-                .filter(each -> each.getCountryName().equalsIgnoreCase(country))
-                .findFirst()
-                .orElseThrow(() -> new CountryNotFoundException("Invalid Country Name"));
+        LeagueDetails leagueDetails = LeagueDetails.builder().countryName(country)
+                .leagueName(league).teamName(team).build();
+        enricher.enrich(leagueDetails);
+        return leagueDetails;
     }
 }

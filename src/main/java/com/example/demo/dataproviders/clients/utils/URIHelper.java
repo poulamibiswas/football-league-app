@@ -3,11 +3,11 @@ package com.example.demo.dataproviders.clients.utils;
 import com.example.demo.exceptions.ThirdPartyException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
-
-import static com.example.demo.dataproviders.clients.utils.ApiUtil.isSuccessful;
 
 @Service
 public class URIHelper {
@@ -22,12 +22,19 @@ public class URIHelper {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity<?> request = new HttpEntity<>(headers);
-        ResponseEntity<T> responseEntity = restTemplate.exchange(urlTemplate, HttpMethod.GET,
-                request, type, uriVariables);
-        if (isSuccessful(responseEntity)) {
-            return responseEntity.getBody();
-        } else {
-            throw new ThirdPartyException("Third Party is not responding correctly");
+        try {
+            ResponseEntity<T> responseEntity = restTemplate.exchange(urlTemplate, HttpMethod.GET,
+                    request, type, uriVariables);
+            return extractBody(responseEntity);
+        } catch (HttpClientErrorException | HttpServerErrorException exception) {
+            throw new ThirdPartyException("Third Party is not responding correctly" + exception.getLocalizedMessage());
         }
+    }
+
+    private <T> T extractBody(ResponseEntity<T> responseEntity) {
+        if (responseEntity.getBody() != null)
+            return responseEntity.getBody();
+
+        throw new ThirdPartyException("Response Entity is Null");
     }
 }

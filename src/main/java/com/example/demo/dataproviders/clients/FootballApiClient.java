@@ -14,7 +14,7 @@ import java.util.List;
 public class FootballApiClient {
     private final URIHelper uriHelper;
     private final String baseUrl;
-    private final String apikey = "";
+    private final String apikey = "<insert-api-key>";
 
     public static final String GET_COUNTRIES_URL_TEMPLATE = "?action=get_countries&APIkey={apikey}";
     public static final String GET_LEAGUES_URL_TEMPLATE = "?action=get_leagues&country_id={countryId}&APIkey={apikey}";

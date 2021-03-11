@@ -53,7 +53,7 @@ class LeagueServiceTest {
         assertEquals(detailsForLeagueStanding.getOverallLeaguePosition(), 1);
     }
     @Test
-    void shouldGetDetailsForGivenLeagueForAllTeams() {
+    void shouldThrowExceptionIfTeamNameIsBlank() {
         String country = "india";
         String league = "EPL";
         Country india = Country.builder().countryId(1).countryName("India").build();
@@ -66,14 +66,8 @@ class LeagueServiceTest {
                 .thenReturn(List.of(League.builder().leagueId(1).leagueName("EPL").build()));
         when(footballApiClient.fetchStandingForLeague(1)).thenReturn(List.of(standing));
 
-        LeagueDetails detailsForLeagueStanding = leagueService.getDetailsForLeagueStanding(country, league, null);
-
-        assertNotNull(detailsForLeagueStanding);
-        assertEquals(detailsForLeagueStanding.getLeagueId(), 1);
-        assertEquals(detailsForLeagueStanding.getLeagueName(), "EPL");
-        assertEquals(detailsForLeagueStanding.getTeamName(), "team");
-        assertEquals(detailsForLeagueStanding.getCountryName(), "India");
-        assertEquals(detailsForLeagueStanding.getOverallLeaguePosition(), 1);
+        assertThrows(NoLeaderBoardException.class, () ->
+                leagueService.getDetailsForLeagueStanding(country, league, "  "));
     }
 
     @Test

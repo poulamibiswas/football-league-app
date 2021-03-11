@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,24 +28,17 @@ public class LeagueService {
         Country selectedCountry = getSelectedCountry(country);
         League selectedLeague = getLeague(league, selectedCountry);
 
-        List<Standing> standings = filterStandingForGivenTeam(team, selectedLeague);
-        LeagueDetails leagueDetails = standings.stream()
-                .map(standing -> mapFrom(selectedCountry, standing))
-                .findFirst()
-                .orElseThrow(() -> new NoLeaderBoardException("No leader board information available"));
-        return leagueDetails;
+        Standing standing = filterStandingForGivenTeam(team, selectedLeague);
+        return mapFrom(selectedCountry, standing);
     }
 
-    private List<Standing> filterStandingForGivenTeam(String team, League selectedLeague) {
+    private Standing filterStandingForGivenTeam(String team, League selectedLeague) {
         List<Standing> standings = footballApiClient.fetchStandingForLeague(selectedLeague.getLeagueId());
-        if (Objects.isNull(team)) {
-            return standings;
-        } else {
-            return standings
-                    .stream()
-                    .filter(standing -> standing.getTeamName().equalsIgnoreCase(team))
-                    .collect(Collectors.toList());
-        }
+
+        return standings
+                .stream()
+                .filter(standing -> standing.getTeamName().equalsIgnoreCase(team))
+                .findFirst().orElseThrow(() -> new NoLeaderBoardException("No information available for given team"));
     }
 
     private LeagueDetails mapFrom(Country selectedCountry, Standing standing) {

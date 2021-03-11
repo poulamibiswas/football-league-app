@@ -44,7 +44,7 @@ class LeagueControllerTest {
     }
 
     @Test
-    void shouldGetLeaderBoardDetailsWhenTeamNameIsNotPresent() throws Exception {
+    void shouldReturnBadRequestTeamNameIsNotPresent() throws Exception {
         String countryName = "country";
         String leagueName = "league";
         LeagueDetails mock = LeagueDetails.builder()
@@ -55,9 +55,9 @@ class LeagueControllerTest {
         mockMvc.perform(
                 get("/football/standings?country={countryName}&league={leagueName}",
                         countryName, leagueName)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isBadRequest());
 
-        verify(leagueService).getDetailsForLeagueStanding(countryName, leagueName, null);
+        verifyNoInteractions(leagueService);
     }
 
     @Test
